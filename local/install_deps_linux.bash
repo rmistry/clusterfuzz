@@ -114,6 +114,13 @@ sudo apt-get install -y \
     openjdk-11-jdk \
     liblzma-dev
 
+#sudo apt-get install -y \
+#    docker-ce \
+#    google-cloud-sdk \
+#    openjdk-11-jdk \
+#    liblzma-dev
+
+
 # Install patchelf - latest version not available on some older distros so we
 # compile from source.
 # Needed for MemorySanitizer to patch instrumented system libraries into the

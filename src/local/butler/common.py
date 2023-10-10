@@ -224,6 +224,7 @@ def _install_chromedriver():
 def _pip():
   """Get the pip binary name."""
   return 'pip3'
+  # return 'pip3.8'
 
 
 def _pipfile_to_requirements(pipfile_dir, requirements_path, dev=False):

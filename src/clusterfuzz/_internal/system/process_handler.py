@@ -41,6 +41,10 @@ try:
 except ImportError:
   pass
 
+# import multiprocessing
+# import mozprocess
+# import psutil
+
 # On Android, we need to wait a little after a crash occurred to get the full
 # logcat output. This makes sure we get all the stack frames since there is no
 # effective end marker.
