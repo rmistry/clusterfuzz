@@ -16,7 +16,8 @@ from http import client as http_client
 import json
 import logging
 
-from googleapiclient import discovery
+from googleapiclient import discovery, errors
+from google.auth import exceptions
 
 import google.auth
 import google_auth_httplib2
@@ -29,6 +30,20 @@ EMAIL_SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 BUGANIZER_SCOPES = 'https://www.googleapis.com/auth/buganizer'
 MAX_DISCOVERY_RETRIES = 3
 MAX_REQUEST_RETRIES = 5
+
+_NUM_RETRIES = 3
+
+
+class IssueTrackerError(Exception):
+  """Base issue tracker error."""
+
+
+class IssueTrackerNotFoundError(IssueTrackerError):
+  """Not found error."""
+
+
+class IssueTrackerPermissionError(IssueTrackerError):
+  """Permission error."""
 
 
 def ServiceAccountHttp(scope=EMAIL_SCOPE, timeout=None):
@@ -54,11 +69,10 @@ def _GetAppDefaultCredentials(scope=None):
 
 
 class ChromiumIssueTrackerManager:
-  """Chromium issue tracker manager."""
+  """ Chromium issue tracker manager. """
 
   def __init__(self):
-    """Initializes an object for communicate to the Buganizer.
-    """
+    """ Initializes an object to communicate to Buganizer. """
     http = ServiceAccountHttp(BUGANIZER_SCOPES)
     http.timeout = 30
     # Retry connecting at least 3 times.
@@ -74,7 +88,48 @@ class ChromiumIssueTrackerManager:
           raise
       attempt += 1
 
+  @property
+  def client(self):
+    """HTTP Client."""
+    return self._service.build()
+
+  def _execute(self, request):
+    """Executes a request."""
+    http = None
+    for _ in range(2):
+      try:
+        return request.execute(num_retries=_NUM_RETRIES, http=http)
+      except exceptions.RefreshError:
+        # Rebuild client and retry request.
+        http = self._service.build_http()
+        self._client = self._service.build(http=http)
+      except errors.HttpError as e:
+        if e.resp.status == 404:
+          raise IssueTrackerNotFoundError(str(e))
+        if e.resp.status == 403:
+          raise IssueTrackerPermissionError(str(e))
+        raise IssueTrackerError(str(e))
+
+  def test_edit(self, issue_id):
+    """Edit an issue"""
+    update_body = {
+        "add": {},
+        "addMask": "",
+        "remove": {},
+        "removeMask": "",
+    }
+    update_body["issueComment"] = {
+        "comment": "test comment",
+    }
+    request = self._service.issues().modify(
+        issueId=issue_id, body=update_body)
+    return self._execute(request)
+
 
 if __name__ == '__main__':
   c = ChromiumIssueTrackerManager()
-  print(c)
+  print(dir(c._service))
+  result = c.test_edit('302703317')
+  print(result)
+  print(dir(result))
+
