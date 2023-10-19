@@ -456,6 +456,13 @@ def file_issue(testcase,
   for cc in ccs:
     issue.ccs.add(cc)
 
+  if policy.ext_collaborators:
+    for collaborator in collaborators:
+      issue.collaborators.add(collaborator)
+
+  if policy.ext_issue_access_level:
+    issue.issue_access_level = policy.ext_issue_access_level
+
   # Add additional labels and components from testcase metadata.
   metadata_labels = _get_from_metadata(testcase, 'issue_labels')
   for label in metadata_labels:

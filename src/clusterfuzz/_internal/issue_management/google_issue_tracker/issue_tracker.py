@@ -92,6 +92,14 @@ class Issue(issue_tracker.Issue):
     self._components.reset_tracking()
 
   @property
+  def collaborators(self):
+    pass
+
+  @property
+  def issue_access_level(self):
+    pass
+
+  @property
   def issue_tracker(self):
     """The issue tracker for this issue."""
     return self._issue_tracker

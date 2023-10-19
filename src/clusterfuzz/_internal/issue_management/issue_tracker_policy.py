@@ -41,6 +41,9 @@ class NewIssuePolicy:
     self.ccs = []
     self.labels = []
     self.issue_body_footer = ''
+    # google-issue-tracker specific extensions.
+    self.ext_collaborators = []
+    self.ext_issue_access_level = ''
 
 
 def _to_str_list(values):
@@ -147,6 +150,13 @@ class IssueTrackerPolicy:
 
     if 'ccs' in issue_type:
       policy.ccs.extend(issue_type['ccs'])
+
+    ext_collaborators = issue_type.get('ext_collaborators')
+    if ext_collaborators:
+      policy.ext_collaborators = ext_collaborators
+    ext_issue_access_level = issue_type.get('ext_issue_access_level')
+    if ext_issue_access_level:
+      policy.ext_issue_access_level = ext_issue_access_level
 
     labels = issue_type.get('labels')
     if labels:
